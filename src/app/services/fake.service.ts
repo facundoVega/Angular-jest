@@ -1,14 +1,16 @@
 import { HttpClient, HttpErrorResponse, HttpHeaderResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, tap } from 'rxjs';
+import { NotificationModel } from '../models/notificationModel';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FakeService {
 
-  constructor(private http: HttpClient) { }
+  markAsReadInterval: any;
 
+  constructor(private http: HttpClient) { }
   getDataV1(): Observable<any>{
     const url= 'https://jsonplaceholder.typicodecom/todos/1';
     return this.http.get(url);
@@ -40,6 +42,24 @@ export class FakeService {
       throw new Error(`${operation} failed ${message}`);
     }
     
+  }
+
+  public useNotification(notification: NotificationModel): void {
+    if(notification.text === 'error')
+      console.error(`${notification.text}`);
+    if(notification.text === 'common')
+      console.error(`${notification.text}`);
+  }
+
+  public startMarkAsReadInterval(): void {
+    this.markAsReadInterval = setInterval(
+      this.markNotificationAsRead,
+      5000
+    )
+  }
+
+  public markNotificationAsRead(): void{
+
   }
 
 } 

@@ -3,6 +3,7 @@ import { FakeService } from './fake.service';
 import {jest} from '@jest/globals'
 import { of, throwError } from 'rxjs';
 import { exec } from 'child_process';
+import { SpyInstance } from 'jest-mock';
 
 describe('FakeService', () => {
   let service: FakeService;
@@ -96,5 +97,64 @@ describe('FakeService', () => {
 
     expect(httpClientSpy.post).toBeCalledTimes(1);
   })
+
+  describe('startMarkAsReadInterval', () =>{
+    let markNotificationAsReadSpy: SpyInstance<(...args: unknown[]) => any>;
+
+    beforeEach(()=>{
+      jest.useFakeTimers();
+      markNotificationAsReadSpy = jest.spyOn(service, 'markNotificationAsRead');
+    })
+
+    afterEach(()=>{
+      jest.clearAllTimers();
+    })
+
+    it('should set markAsReadInterval', ()=>{
+
+      service.markAsReadInterval = undefined;
+
+      service.startMarkAsReadInterval();
+
+      expect(service.markAsReadInterval).toEqual(expect.any(Number))
+
+    })
+
+    it('should call markNotificationAsRead method', ()=>{
+
+      service.startMarkAsReadInterval();
+
+      jest.runOnlyPendingTimers();
+      
+      expect(markNotificationAsReadSpy).toBeCalled();
+
+    })
+
+    describe('markNotificationAsRead boundaries', ()=>{
+      
+      it('should not trigger markNotificationAsRead before 5 seconds', ()=>{
+        service.startMarkAsReadInterval();
+        jest.advanceTimersByTime(4999);
+        expect(markNotificationAsReadSpy).not.toBeCalled();
+  
+      })
+
+      it('should  trigger markNotificationAsRead after 5 seconds', ()=>{
+        service.startMarkAsReadInterval();
+        jest.advanceTimersByTime(5001);
+        expect(markNotificationAsReadSpy).toBeCalled();
+      })
+  
+      it('should  trigger markNotificationAsRead 4 times in 20 seconds', ()=>{
+        service.startMarkAsReadInterval();
+        jest.advanceTimersByTime(20000);
+        expect(markNotificationAsReadSpy).toBeCalledTimes(4);
+      })
+  
+    })
+
+  })
+
+
 
 });
